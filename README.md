@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ANGEL GRAPHIC — Portfolio
 
-## Getting Started
+Site portfolio pour **ANGEL GRAPHIC**, design graphique et identité visuelle.  
+Next.js (App Router), Tailwind CSS, Framer Motion, Sanity.
 
-First, run the development server:
+## Démarrage
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Dossier / fichier | Rôle |
+|-------------------|------|
+| `app/` | Pages et layout (App Router) |
+| `components/` | Navbar, Hero, MonHistoire, MaVision, Portfolio, Projects, Services, Contact, Journal, Footer, Lightbox |
+| `lib/constants.ts` | Email, navigation, réseaux sociaux, catégories |
+| `lib/journal.ts` | Journal (articles) |
+| `lib/sanity.ts` | Client Sanity, GROQ, projets |
+| `sanity.config.ts`, `sanity/schemas/` | Sanity Studio, schéma `project` |
+| `data/journal.json` | Articles du journal |
+| `app/api/contact/route.ts` | API contact (simulation) |
 
-## Learn More
+## Configuration
 
-To learn more about Next.js, take a look at the following resources:
+### Sanity (projets)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Créer un projet sur [sanity.io/manage](https://sanity.io/manage).
+2. Copier `env.example` vers `.env.local`, renseigner `NEXT_PUBLIC_SANITY_PROJECT_ID` et `NEXT_PUBLIC_SANITY_DATASET`.
+3. Dans le projet Sanity → **API** → **CORS origins** : ajouter `http://localhost:3000` (et l’URL de production en déploiement), avec *Allow credentials*.
+4. **Studio** : `/studio` pour gérer les projets. **Admin** : `/admin` pour les explications.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Logo
 
-## Deploy on Vercel
+Remplacer `public/Angel Graphic New Logo Design 3 PNG.png` par le logo souhaité, ou adapter `LOGO_PATH` dans `components/Navbar.tsx`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Contact
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Email et liens : `lib/constants.ts`.
+- Envoi réel : brancher Resend, Nodemailer ou Formspree dans `app/api/contact/route.ts`.
+
+### Journal
+
+Modifier `data/journal.json` pour ajouter ou éditer des articles (`slug`, `title`, `excerpt`, `date`, `content`).
+
+## Build
+
+```bash
+npm run build
+npm run start
+```
+
+## Déploiement sur Vercel
+
+1. **Pousser le code sur Git**  
+   GitHub, GitLab ou Bitbucket. Vercel se connecte à ton dépôt.
+
+2. **Créer un projet Vercel**  
+   - Va sur [vercel.com](https://vercel.com) et connecte-toi (ou crée un compte).  
+   - **Add New** → **Project** → importe ton dépôt `angel-graphic-site`.  
+   - Framework : **Next.js** (détecté automatiquement).  
+   - **Deploy**.
+
+3. **Variables d’environnement**  
+   Dans le projet Vercel → **Settings** → **Environment Variables**, ajoute :
+   - `NEXT_PUBLIC_SANITY_PROJECT_ID` = ton Project ID Sanity  
+   - `NEXT_PUBLIC_SANITY_DATASET` = `production`  
+   Puis **Redeploy** le projet pour qu’elles soient prises en compte.
+
+4. **CORS Sanity**  
+   Dans [sanity.io/manage](https://sanity.io/manage) → ton projet → **API** → **CORS origins** :  
+   - Ajoute l’URL de production (ex. `https://ton-site.vercel.app` ou ton domaine custom).  
+   - Coche **Allow credentials**.  
+   Ainsi le Studio sur `/studio` et les données projets fonctionneront en prod.
+
+5. **Déploiements suivants**  
+   À chaque push sur la branche connectée (souvent `main`), Vercel redéploie automatiquement.
+
+---
+
+© ANGEL GRAPHIC

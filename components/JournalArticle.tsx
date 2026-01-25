@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { PortableText } from "@portabletext/react";
+import { PortableText, type PortableTextBlock } from "@portabletext/react";
 import type { PostForArticle } from "@/lib/sanity";
 import { ArrowLeft } from "lucide-react";
 
@@ -70,7 +70,7 @@ export default function JournalArticle({ post }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <PortableText value={post.content} />
+          <PortableText value={post.content as PortableTextBlock[]} />
         </motion.div>
       </div>
     </article>

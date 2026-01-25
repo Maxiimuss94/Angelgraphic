@@ -113,3 +113,99 @@ export async function fetchFeaturedProjects(): Promise<ProjectForGrid[]> {
     return [];
   }
 }
+
+/** Tous les articles du Journal, triés par date (plus récent en premier). */
+export const POSTS_GROQ = `*[_type == "post"] | order(publishedAt desc) {
+  _id,
+  title,
+  slug,
+  coverImage,
+  excerpt,
+  publishedAt,
+  category
+}`;
+
+/** Article par slug. */
+export const POST_BY_SLUG_GROQ = `*[_type == "post" && slug.current == $slug][0] {
+  _id,
+  title,
+  slug,
+  coverImage,
+  excerpt,
+  publishedAt,
+  category,
+  content
+}`;
+
+export type SanityPost = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  coverImage: { _type: string; asset?: { _ref: string }; hotspot?: unknown };
+  excerpt: string;
+  publishedAt: string;
+  category: string;
+  content?: unknown[];
+};
+
+export type PostForList = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  category: string;
+  coverImage: string;
+};
+
+export type PostForArticle = PostForList & {
+  content: unknown[];
+};
+
+function toPostForList(p: SanityPost): PostForList | null {
+  try {
+    if (!p?.coverImage) return null;
+    const img = urlFor(p.coverImage);
+    const coverUrl = img.width(800).height(600).url();
+    return {
+      id: p._id,
+      slug: p.slug?.current ?? "",
+      title: p.title ?? "",
+      excerpt: p.excerpt ?? "",
+      date: p.publishedAt ?? "",
+      category: p.category ?? "Design",
+      coverImage: coverUrl,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPosts(): Promise<PostForList[]> {
+  try {
+    const c = getClient();
+    if (!c) return [];
+    const raw = await c.fetch<SanityPost[]>(POSTS_GROQ);
+    const list = Array.isArray(raw) ? raw : [];
+    return list.map(toPostForList).filter((x): x is PostForList => x != null);
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchPostBySlug(slug: string): Promise<PostForArticle | null> {
+  try {
+    const c = getClient();
+    if (!c) return null;
+    const raw = await c.fetch<SanityPost>(POST_BY_SLUG_GROQ, { slug });
+    if (!raw) return null;
+    const base = toPostForList(raw);
+    if (!base) return null;
+    return {
+      ...base,
+      content: raw.content ?? [],
+    };
+  } catch {
+    return null;
+  }
+}

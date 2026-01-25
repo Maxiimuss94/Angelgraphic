@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { SITE, SOCIAL_LINKS } from "@/lib/constants";
-import { Instagram, Send } from "lucide-react";
+import { SOCIAL_LINKS } from "@/lib/constants";
+import { Instagram, Send, Mail } from "lucide-react";
 
 function PinterestIcon({ className }: { className?: string }) {
   return (
@@ -27,17 +27,60 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   tiktok: TikTokIcon,
 };
 
+const OBJET_OPTIONS = [
+  { value: "devis", label: "Demande de devis" },
+  { value: "info", label: "Demande d'information" },
+  { value: "collab", label: "Collaboration" },
+  { value: "autre", label: "Autre" },
+];
+
+const CONTACT_EMAIL_DISPLAY = "hello@angelgraphic.design";
+const CONTACT_EMAIL_SEND = "angelgraphic094@gmail.com";
+
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePhone(phone: string): boolean {
+  const digits = phone.replace(/\D/g, "");
+  return digits.length >= 10;
+}
+
 export default function Contact() {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     nom: "",
     prenom: "",
+    email: "",
+    telephone: "",
     objet: "",
     message: "",
   });
 
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!form.nom.trim()) newErrors.nom = "Le nom est requis";
+    if (!form.prenom.trim()) newErrors.prenom = "Le prénom est requis";
+    if (!form.email.trim()) {
+      newErrors.email = "L'email est requis";
+    } else if (!validateEmail(form.email)) {
+      newErrors.email = "Format d'email invalide";
+    }
+    if (!form.telephone.trim()) {
+      newErrors.telephone = "Le numéro de téléphone est requis";
+    } else if (!validatePhone(form.telephone)) {
+      newErrors.telephone = "Au moins 10 chiffres requis";
+    }
+    if (!form.objet) newErrors.objet = "Veuillez sélectionner un objet";
+    if (!form.message.trim()) newErrors.message = "Le message est requis";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setStatus("sending");
 
     try {
@@ -49,7 +92,8 @@ export default function Contact() {
       const data = await res.json();
       if (res.ok && data.success) {
         setStatus("success");
-        setForm({ nom: "", prenom: "", objet: "", message: "" });
+        setForm({ nom: "", prenom: "", email: "", telephone: "", objet: "", message: "" });
+        setErrors({});
       } else {
         setStatus("error");
       }
@@ -61,102 +105,181 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="scroll-mt-20 border-t border-gold-light/50 bg-blanc px-4 py-20 sm:px-6 md:py-28"
+      className="scroll-mt-20 border-t border-gold-light/30 bg-blanc px-4 py-20 sm:px-6 md:py-32"
     >
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <motion.h2
-          className="font-serif text-3xl font-semibold text-bordeaux sm:text-4xl"
-          initial={{ opacity: 0, y: 16 }}
+          className="font-serif text-4xl font-light text-noir sm:text-5xl md:text-6xl"
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           Contact
         </motion.h2>
         <motion.p
-          className="mt-4 text-noir/80"
+          className="mt-6 text-lg text-noir/70 md:mt-8 md:text-xl"
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
         >
-          Formulaire à destination de{" "}
+          Une question, un projet ? Écrivez-moi via le formulaire ou{" "}
           <a
-            href={`mailto:${SITE.email}`}
-            className="font-medium text-bordeaux underline hover:no-underline"
+            href={`mailto:${CONTACT_EMAIL_SEND}`}
+            className="inline-flex items-center gap-1.5 font-medium text-gold underline decoration-gold/50 hover:decoration-gold"
           >
-            {SITE.email}
+            <Mail className="h-4 w-4" />
+            {CONTACT_EMAIL_DISPLAY}
           </a>
-          . Ou suivez-moi sur les réseaux.
         </motion.p>
 
-        <div className="mt-12 grid gap-12 md:grid-cols-2">
+        <div className="mt-16 grid gap-12 md:mt-20 md:grid-cols-2">
           <motion.form
             onSubmit={handleSubmit}
-            className="space-y-4"
+            className="space-y-5"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5, delay: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
           >
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-noir/80">
-                  Nom
+                <span className="mb-2 block text-sm font-medium text-noir/80">
+                  Nom <span className="text-gold">*</span>
                 </span>
                 <input
                   type="text"
                   required
                   value={form.nom}
-                  onChange={(e) => setForm((f) => ({ ...f, nom: e.target.value }))}
-                  className="w-full rounded-lg border border-gold-light/60 bg-blanc px-4 py-3 text-noir placeholder-noir/40 focus:border-bordeaux focus:outline-none focus:ring-1 focus:ring-bordeaux"
+                  onChange={(e) => {
+                    setForm((f) => ({ ...f, nom: e.target.value }));
+                    if (errors.nom) setErrors((e) => ({ ...e, nom: "" }));
+                  }}
+                  className={`w-full rounded-lg border bg-white px-4 py-3 text-noir placeholder-noir/40 transition focus:outline-none focus:ring-2 ${
+                    errors.nom
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                      : "border-gold-light/60 focus:border-gold focus:ring-gold/20"
+                  }`}
                   placeholder="Votre nom"
                 />
+                {errors.nom && <p className="mt-1 text-xs text-red-600">{errors.nom}</p>}
               </label>
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-noir/80">
-                  Prénom
+                <span className="mb-2 block text-sm font-medium text-noir/80">
+                  Prénom <span className="text-gold">*</span>
                 </span>
                 <input
                   type="text"
                   required
                   value={form.prenom}
-                  onChange={(e) => setForm((f) => ({ ...f, prenom: e.target.value }))}
-                  className="w-full rounded-lg border border-gold-light/60 bg-blanc px-4 py-3 text-noir placeholder-noir/40 focus:border-bordeaux focus:outline-none focus:ring-1 focus:ring-bordeaux"
+                  onChange={(e) => {
+                    setForm((f) => ({ ...f, prenom: e.target.value }));
+                    if (errors.prenom) setErrors((e) => ({ ...e, prenom: "" }));
+                  }}
+                  className={`w-full rounded-lg border bg-white px-4 py-3 text-noir placeholder-noir/40 transition focus:outline-none focus:ring-2 ${
+                    errors.prenom
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                      : "border-gold-light/60 focus:border-gold focus:ring-gold/20"
+                  }`}
                   placeholder="Votre prénom"
                 />
+                {errors.prenom && <p className="mt-1 text-xs text-red-600">{errors.prenom}</p>}
               </label>
             </div>
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-noir/80">
-                Objet
+              <span className="mb-2 block text-sm font-medium text-noir/80">
+                Email <span className="text-gold">*</span>
               </span>
               <input
-                type="text"
+                type="email"
                 required
-                value={form.objet}
-                onChange={(e) => setForm((f) => ({ ...f, objet: e.target.value }))}
-                className="w-full rounded-lg border border-gold-light/60 bg-blanc px-4 py-3 text-noir placeholder-noir/40 focus:border-bordeaux focus:outline-none focus:ring-1 focus:ring-bordeaux"
-                placeholder="Objet du message"
+                value={form.email}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, email: e.target.value }));
+                  if (errors.email) setErrors((e) => ({ ...e, email: "" }));
+                }}
+                className={`w-full rounded-lg border bg-white px-4 py-3 text-noir placeholder-noir/40 transition focus:outline-none focus:ring-2 ${
+                  errors.email
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-gold-light/60 focus:border-gold focus:ring-gold/20"
+                }`}
+                placeholder="votre@email.com"
               />
+              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
             </label>
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-noir/80">
-                Message
+              <span className="mb-2 block text-sm font-medium text-noir/80">
+                Téléphone <span className="text-gold">*</span>
+              </span>
+              <input
+                type="tel"
+                required
+                value={form.telephone}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, telephone: e.target.value }));
+                  if (errors.telephone) setErrors((e) => ({ ...e, telephone: "" }));
+                }}
+                className={`w-full rounded-lg border bg-white px-4 py-3 text-noir placeholder-noir/40 transition focus:outline-none focus:ring-2 ${
+                  errors.telephone
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-gold-light/60 focus:border-gold focus:ring-gold/20"
+                }`}
+                placeholder="+33 6 12 34 56 78"
+              />
+              {errors.telephone && <p className="mt-1 text-xs text-red-600">{errors.telephone}</p>}
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-noir/80">
+                Objet <span className="text-gold">*</span>
+              </span>
+              <select
+                required
+                value={form.objet}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, objet: e.target.value }));
+                  if (errors.objet) setErrors((e) => ({ ...e, objet: "" }));
+                }}
+                className={`w-full rounded-lg border bg-white px-4 py-3 text-noir transition focus:outline-none focus:ring-2 ${
+                  errors.objet
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-gold-light/60 focus:border-gold focus:ring-gold/20"
+                }`}
+              >
+                <option value="">Sélectionnez un objet</option>
+                {OBJET_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              {errors.objet && <p className="mt-1 text-xs text-red-600">{errors.objet}</p>}
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-noir/80">
+                Message <span className="text-gold">*</span>
               </span>
               <textarea
                 required
-                rows={4}
+                rows={5}
                 value={form.message}
-                onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                className="w-full resize-none rounded-lg border border-gold-light/60 bg-blanc px-4 py-3 text-noir placeholder-noir/40 focus:border-bordeaux focus:outline-none focus:ring-1 focus:ring-bordeaux"
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, message: e.target.value }));
+                  if (errors.message) setErrors((e) => ({ ...e, message: "" }));
+                }}
+                className={`w-full resize-none rounded-lg border bg-white px-4 py-3 text-noir placeholder-noir/40 transition focus:outline-none focus:ring-2 ${
+                  errors.message
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-gold-light/60 focus:border-gold focus:ring-gold/20"
+                }`}
                 placeholder="Votre message..."
               />
+              {errors.message && <p className="mt-1 text-xs text-red-600">{errors.message}</p>}
             </label>
             <button
               type="submit"
               disabled={status === "sending"}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-bordeaux px-6 py-3 font-medium text-white transition hover:bg-bordeaux-dark disabled:opacity-60 sm:w-auto"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-noir px-6 py-3 font-medium text-white transition hover:bg-noir/90 disabled:opacity-60 sm:w-auto"
             >
               {status === "sending" ? (
                 "Envoi..."
@@ -175,31 +298,21 @@ export default function Contact() {
               >
                 {status === "success"
                   ? "Message envoyé. Merci, je vous recontacte rapidement."
-                  : (
-                    <>
-                      Erreur d&apos;envoi. Réessayez ou contactez-moi à{" "}
-                      <a href={`mailto:${SITE.email}`} className="underline">
-                        {SITE.email}
-                      </a>
-                      .
-                    </>
-                  )}
+                  : `Erreur d'envoi. Réessayez ou contactez-moi à ${CONTACT_EMAIL_DISPLAY}.`}
               </p>
             )}
           </motion.form>
 
           <motion.div
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div>
-              <h3 className="font-serif text-lg font-semibold text-noir">
-                Réseaux sociaux
-              </h3>
-              <ul className="mt-4 flex flex-wrap gap-4">
+              <h3 className="font-serif text-xl font-light text-noir">Réseaux sociaux</h3>
+              <ul className="mt-4 flex flex-wrap gap-3">
                 {SOCIAL_LINKS.map((link) => {
                   const Icon = SOCIAL_ICONS[link.icon] ?? Instagram;
                   return (
@@ -208,7 +321,7 @@ export default function Contact() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded-full border border-gold-light/60 bg-blanc px-4 py-2 text-noir/80 transition hover:border-bordeaux hover:text-bordeaux"
+                        className="flex items-center gap-2 rounded-full border border-gold-light/60 bg-white px-4 py-2 text-noir/80 transition hover:border-gold hover:bg-gold/5 hover:text-gold"
                         aria-label={link.name}
                       >
                         <Icon className="h-5 w-5" />
@@ -219,13 +332,13 @@ export default function Contact() {
                 })}
               </ul>
             </div>
-            <p className="text-sm text-noir/70">
+            <p className="text-sm text-noir/60">
               Instagram :{" "}
               <a
                 href={SOCIAL_LINKS[0].href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-bordeaux hover:underline"
+                className="font-medium text-gold hover:underline"
               >
                 @angelgraphic.official
               </a>

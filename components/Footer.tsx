@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { SITE, SOCIAL_LINKS } from "@/lib/constants";
@@ -28,19 +29,33 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 };
 
 export default function Footer() {
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  useEffect(() => {
+    let keys: string[] = [];
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.shiftKey && e.key.toLowerCase() === "a") {
+        setShowAdmin(true);
+        setTimeout(() => setShowAdmin(false), 5000);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
-    <footer className="border-t border-gold-light/50 bg-noir px-4 py-12 text-blanc sm:px-6">
+    <footer className="border-t border-gold-light/30 bg-noir px-4 py-16 text-blanc sm:px-6">
       <div className="mx-auto max-w-5xl">
         <motion.div
-          className="flex flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left"
+          className="flex flex-col items-center gap-8 text-center md:flex-row md:justify-between md:text-left"
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
           <div>
-            <p className="font-serif text-lg font-semibold">{SITE.name}</p>
-            <p className="mt-1 text-sm text-gold-light/90">{SITE.slogan}</p>
+            <p className="font-serif text-xl font-light">{SITE.name}</p>
+            <p className="mt-2 text-sm text-gold-light/90">{SITE.slogan}</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             {SOCIAL_LINKS.map((link) => {
@@ -62,7 +77,7 @@ export default function Footer() {
           </div>
         </motion.div>
         <motion.div
-          className="mt-10 flex flex-col items-center gap-2 border-t border-white/10 pt-8 text-center text-sm text-white/70 md:flex-row md:justify-between"
+          className="mt-12 flex flex-col items-center gap-4 border-t border-white/10 pt-8 text-center text-sm text-white/70 md:flex-row md:justify-between"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -71,19 +86,31 @@ export default function Footer() {
           <p>Original Design by {SITE.name} ©{new Date().getFullYear()}</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
-              href={`mailto:${SITE.email}`}
+              href="mailto:angelgraphic094@gmail.com"
               className="text-gold-light hover:underline"
             >
-              {SITE.email}
+              hello@angelgraphic.design
             </a>
-            <Link
-              href="/admin"
-              className="text-white/50 hover:text-gold-light/80 hover:underline"
-            >
-              Admin
-            </Link>
+            {showAdmin && (
+              <Link
+                href="/admin"
+                className="text-white/50 hover:text-gold-light/80 hover:underline"
+              >
+                Admin
+              </Link>
+            )}
           </div>
         </motion.div>
+        <motion.p
+          className="mt-8 text-center text-xs text-white/50"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+        >
+          Une réalisation signée{" "}
+          <span className="font-medium text-gold-light/80">KAY Consulting</span> — Stratégie & Design Digital
+        </motion.p>
       </div>
     </footer>
   );

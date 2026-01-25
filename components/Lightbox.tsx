@@ -56,7 +56,7 @@ export default function Lightbox({ project, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="absolute -right-2 -top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-blanc text-noir shadow-lg transition hover:bg-gold-light"
+              className="absolute -right-2 -top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-noir shadow-lg transition hover:bg-gold/20 hover:text-gold"
               aria-label="Fermer"
             >
               <X className="h-5 w-5" />
@@ -71,11 +71,11 @@ export default function Lightbox({ project, onClose }: Props) {
                   className="h-full w-full object-contain"
                 />
               </div>
-              <div className="border-t border-gold-light/50 px-6 py-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-bordeaux">
+              <div className="border-t border-gold-light/30 px-6 py-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-gold">
                   {project.category}
                 </p>
-                <h3 className="font-serif text-xl font-semibold text-noir">
+                <h3 className="font-serif text-xl font-light text-noir">
                   {project.title}
                 </h3>
                 {project.description && (

@@ -11,34 +11,34 @@ export default function Portfolio({ projects }: Props) {
   return (
     <section
       id="portfolio"
-      className="scroll-mt-20 border-t border-gold-light/50 bg-blanc px-4 py-20 sm:px-6 md:py-28"
+      className="scroll-mt-20 border-t border-gold-light/30 bg-blanc px-4 py-20 sm:px-6 md:py-32"
     >
       <div className="mx-auto max-w-5xl">
         <motion.h2
-          className="font-serif text-3xl font-semibold text-bordeaux sm:text-4xl"
-          initial={{ opacity: 0, y: 16 }}
+          className="font-serif text-4xl font-light text-noir sm:text-5xl md:text-6xl"
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           Portfolio
         </motion.h2>
         <motion.p
-          className="mt-4 max-w-2xl text-noir/80"
+          className="mt-6 text-lg text-noir/70 md:mt-8 md:text-xl"
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
         >
           Sélection des meilleurs travaux.
         </motion.p>
 
         <motion.div
-          className="mt-12"
+          className="mt-12 md:mt-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.5, delay: 0.15 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
         >
           <ProjectsGrid
             projects={projects}
@@ -48,7 +48,7 @@ export default function Portfolio({ projects }: Props) {
         </motion.div>
 
         <motion.div
-          className="mt-10 text-center"
+          className="mt-12 text-center md:mt-16"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -56,7 +56,7 @@ export default function Portfolio({ projects }: Props) {
         >
           <Link
             href="/projets"
-            className="inline-flex items-center rounded-full bg-bordeaux px-6 py-3 text-sm font-medium text-white transition hover:bg-bordeaux-dark"
+            className="inline-flex items-center rounded-lg bg-noir px-6 py-3 text-sm font-medium text-white transition hover:bg-noir/90"
           >
             Voir tous les projets
           </Link>

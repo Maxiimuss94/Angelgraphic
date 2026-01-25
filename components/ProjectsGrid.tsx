@@ -59,7 +59,7 @@ export default function ProjectsGrid({
   return (
     <>
       {showFilter && (
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="mb-10 flex flex-wrap justify-center gap-2">
           {PROJECT_CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -67,8 +67,8 @@ export default function ProjectsGrid({
               onClick={() => setCategory(cat)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                 category === cat
-                  ? "bg-bordeaux text-white"
-                  : "bg-gold-light/40 text-noir/80 hover:bg-gold-light/60"
+                  ? "bg-noir text-white"
+                  : "border border-gold-light/60 bg-white/80 text-noir/80 hover:border-gold hover:bg-gold/5 hover:text-gold"
               }`}
             >
               {cat}
@@ -96,7 +96,7 @@ export default function ProjectsGrid({
               layout
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="col-span-full py-12 text-center text-noir/60"
+              className="col-span-full py-16 text-center text-lg text-noir/60"
             >
               Aucun projet dans cette catégorie pour le moment.
             </motion.p>

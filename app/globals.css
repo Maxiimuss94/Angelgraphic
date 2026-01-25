@@ -1,23 +1,24 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #fafafa;
-  --color-foreground: #1a1a1a;
-  --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --color-background: #fafaf8;
+  --color-foreground: #050505;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
   --color-bordeaux: #5c2a38;
   --color-bordeaux-light: #7d3d4d;
   --color-bordeaux-dark: #3d1c26;
-  --color-gold: #c9a962;
-  --color-gold-light: #e8dcc4;
-  --color-gold-dark: #a68b4a;
-  --color-noir: #1a1a1a;
-  --color-blanc: #fafafa;
+  --color-gold: #C5A059;
+  --color-gold-light: #E8DCC4;
+  --color-gold-dark: #A68B4A;
+  --color-noir: #050505;
+  --color-blanc: #fafaf8;
+  --color-blanc-casse: #f5f3ef;
 }
 
 :root {
-  --background: #fafafa;
-  --foreground: #1a1a1a;
+  --background: #fafaf8;
+  --foreground: #050505;
 }
 
 body {
@@ -28,4 +29,17 @@ body {
 
 .font-serif {
   font-family: var(--font-serif);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }

@@ -49,7 +49,7 @@ export const SOCIAL_LINKS = [
   },
   {
     name: "TikTok",
-    href: "https://www.tiktok.com/@angelgraphic.official",
+    href: "https://www.tiktok.com/@angelgraphic4?_r=1&_t=ZN-93LD4hHHPbK",
     icon: "tiktok",
   },
 ] as const;

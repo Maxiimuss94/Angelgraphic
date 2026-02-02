@@ -1,6 +1,5 @@
-import Portfolio from "@/components/Portfolio";
+import PortfolioShowcase from "@/components/PortfolioShowcase";
 import Footer from "@/components/Footer";
-import { fetchFeaturedProjects } from "@/lib/sanity";
 
 export const revalidate = 60;
 
@@ -9,12 +8,11 @@ export const metadata = {
   description: "Sélection des meilleurs travaux — Angel Graphic.",
 };
 
-export default async function PortfolioPage() {
-  const projects = await fetchFeaturedProjects();
+export default function PortfolioPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-blanc text-foreground">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0a] text-foreground">
       <main className="flex-1">
-        <Portfolio projects={projects} />
+        <PortfolioShowcase />
       </main>
       <Footer />
     </div>

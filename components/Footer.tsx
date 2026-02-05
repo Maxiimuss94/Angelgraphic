@@ -88,8 +88,9 @@ export default function Footer() {
             <a
               href="mailto:angelgraphic094@gmail.com"
               className="text-gold-light hover:underline"
+              aria-label="Envoyer un email à Angel Graphic"
             >
-              hello@angelgraphic.design
+              ✉️ Envoyer un email
             </a>
             {showAdmin && (
               <Link

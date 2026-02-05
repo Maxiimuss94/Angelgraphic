@@ -34,7 +34,8 @@ const OBJET_OPTIONS = [
   { value: "autre", label: "Autre" },
 ];
 
-const CONTACT_EMAIL_DISPLAY = "hello@angelgraphic.design";
+/** Libellé du lien email (n'affiche pas l'adresse pour éviter que les visiteurs ne copient la mauvaise). */
+const CONTACT_EMAIL_LABEL = "✉️ Envoyer un email";
 const CONTACT_EMAIL_SEND = "angelgraphic094@gmail.com";
 
 function validateEmail(email: string): boolean {
@@ -48,6 +49,7 @@ function validatePhone(phone: string): boolean {
 
 export default function Contact() {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     nom: "",
@@ -84,6 +86,7 @@ export default function Contact() {
     setStatus("sending");
 
     try {
+      setErrorMessage("");
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -96,9 +99,11 @@ export default function Contact() {
         setErrors({});
       } else {
         setStatus("error");
+        setErrorMessage(typeof data?.error === "string" ? data.error : "");
       }
     } catch {
       setStatus("error");
+      setErrorMessage("Erreur de connexion. Réessayez.");
     }
   };
 
@@ -130,7 +135,7 @@ export default function Contact() {
             className="inline-flex items-center gap-1.5 font-medium text-gold underline decoration-gold/50 hover:decoration-gold"
           >
             <Mail className="h-4 w-4" />
-            {CONTACT_EMAIL_DISPLAY}
+            {CONTACT_EMAIL_LABEL}
           </a>
         </motion.p>
 
@@ -298,7 +303,7 @@ export default function Contact() {
               >
                 {status === "success"
                   ? "Message envoyé. Merci, je vous recontacte rapidement."
-                  : `Erreur d'envoi. Réessayez ou contactez-moi à ${CONTACT_EMAIL_DISPLAY}.`}
+                  : errorMessage || "Erreur d'envoi. Réessayez ou contactez-moi par email."}
               </p>
             )}
           </motion.form>

@@ -8,7 +8,8 @@ import { CAROUSEL_IMAGES } from "@/lib/carousel";
 import { ChevronDown } from "lucide-react";
 
 const AUTOPLAY_MS = 5000;
-const KEN_BURNS_DURATION = AUTOPLAY_MS / 1000;
+const CROSSFADE_DURATION = 1.5;
+const EASE_SMOOTH = [0.4, 0, 0.2, 1] as const;
 
 export default function HeroCarousel() {
   const [index, setIndex] = useState(0);
@@ -24,42 +25,59 @@ export default function HeroCarousel() {
     document.getElementById("hero-content")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const currentSrc = CAROUSEL_IMAGES[index];
+
   return (
     <section
       id="accueil"
-      className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden"
+      className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-noir"
     >
-      {/* Carousel images with Ken Burns */}
-      <div className="absolute inset-0">
-        <AnimatePresence mode="wait" initial={false}>
+      {/* Conteneur carousel : hauteur fixe, overflow hidden. Toutes les slides en absolute inset-0. */}
+      <div className="relative h-full min-h-[100dvh] w-full overflow-hidden">
+        <AnimatePresence initial={false}>
           <motion.div
             key={index}
             className="absolute inset-0"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            animate={{
+              opacity: 1,
+              zIndex: 10,
+            }}
+            exit={{
+              opacity: 0,
+              zIndex: 0,
+            }}
+            transition={{
+              duration: CROSSFADE_DURATION,
+              ease: EASE_SMOOTH,
+            }}
           >
+            {/* Ken Burns : scale 1.05 → 1 pendant la transition */}
             <motion.div
-              className="absolute inset-[-8%]"
-              initial={{ scale: 1, x: 0, y: 0 }}
-              animate={{ scale: 1.06, x: "2%", y: "1%" }}
-              transition={{ duration: KEN_BURNS_DURATION, ease: "linear" }}
+              className="absolute inset-[-6%]"
+              initial={{ scale: 1.05 }}
+              animate={{ scale: 1 }}
+              transition={{
+                duration: CROSSFADE_DURATION + 0.8,
+                ease: EASE_SMOOTH,
+              }}
             >
               <Image
-                src={CAROUSEL_IMAGES[index]}
+                src={currentSrc}
                 alt={`Slide ${index + 1}`}
                 fill
                 className="object-cover"
+                style={{ objectFit: "cover" }}
                 sizes="100vw"
                 priority={index === 0}
               />
             </motion.div>
           </motion.div>
         </AnimatePresence>
-        {/* Overlay gradient */}
+
+        {/* Overlay gradient (sous le texte) */}
         <div
-          className="absolute inset-0 bg-gradient-to-b from-noir/50 via-noir/30 to-noir/70"
+          className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-noir/50 via-noir/30 to-noir/70"
           aria-hidden
         />
       </div>
@@ -101,7 +119,6 @@ export default function HeroCarousel() {
           </motion.p>
         </motion.div>
 
-        {/* Scroll Down button */}
         <motion.button
           type="button"
           onClick={scrollToContent}
@@ -121,7 +138,6 @@ export default function HeroCarousel() {
         </motion.button>
       </div>
 
-      {/* Dots indicator */}
       <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 gap-2">
         {CAROUSEL_IMAGES.map((_, i) => (
           <button

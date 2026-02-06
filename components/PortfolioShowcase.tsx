@@ -1,201 +1,237 @@
 "use client";
 
-import { useRef, useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import type { MotionValue } from "framer-motion";
-import { X } from "lucide-react";
-import { PORTFOLIO_IMAGES_ORDERED } from "@/lib/carousel";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { PORTFOLIO_PAGE_IMAGES } from "@/lib/portfolio";
 
 type PortfolioItem = {
   id: string;
-  title: string;
+  index: number;
   image: string;
+  title: string;
   aspect: "tall" | "square" | "wide";
 };
 
 const ASPECTS: PortfolioItem["aspect"][] = ["tall", "square", "wide", "tall", "square"];
 
-function toItems(): PortfolioItem[] {
-  return PORTFOLIO_IMAGES_ORDERED.map((src, i) => {
+function getItems(): PortfolioItem[] {
+  return PORTFOLIO_PAGE_IMAGES.map((src, i) => {
     const name = src.split("/").pop() ?? "";
-    const base = name.replace(/\.[^.]+$/, "").replace(/^Artboard\s+/, "");
+    const base = name.replace(/\.[^.]+$/, "");
     return {
       id: `portfolio-${i}`,
-      title: base,
+      index: i,
       image: src,
+      title: base,
       aspect: ASPECTS[i % ASPECTS.length],
     };
   });
 }
 
-function distributeMasonry<T>(items: T[], cols: number): T[][] {
-  const colsData: T[][] = Array.from({ length: cols }, () => []);
-  const colHeights = [0, 0, 0];
-  items.forEach((item) => {
-    const col = colHeights[0] <= colHeights[1] && colHeights[0] <= colHeights[2]
-      ? 0
-      : colHeights[1] <= colHeights[2]
-        ? 1
-        : 2;
-    colsData[col].push(item);
-    colHeights[col] += 1;
-  });
-  return colsData;
-}
+const STAGGER = 0.04;
 
-function MasonryColumn({
-  items,
-  y,
+function PortfolioCard({
+  item,
+  index,
   onSelect,
 }: {
-  items: PortfolioItem[];
-  y: MotionValue<number>;
-  onSelect: (item: PortfolioItem) => void;
+  item: PortfolioItem;
+  index: number;
+  onSelect: () => void;
 }) {
-  return (
-    <motion.div
-      className="flex flex-col gap-6"
-      style={{ y }}
-    >
-      {items.map((item) => (
-        <PortfolioCard key={item.id} item={item} onSelect={() => onSelect(item)} />
-      ))}
-    </motion.div>
-  );
-}
-
-function PortfolioCard({ item, onSelect }: { item: PortfolioItem; onSelect: () => void }) {
+  const [loaded, setLoaded] = useState(false);
   const aspectClass =
     item.aspect === "tall"
       ? "aspect-[4/5]"
       : item.aspect === "square"
         ? "aspect-square"
         : "aspect-[5/4]";
+
   return (
     <motion.button
       type="button"
       onClick={onSelect}
-      className={`group relative w-full overflow-hidden focus:outline-none focus:ring-[0.5px] focus:ring-gold focus:ring-offset-0 focus:ring-offset-[#0a0a0a] hover:shadow-[inset_0_0_0_0.5px_rgb(197_160_89/0.6)] ${aspectClass}`}
+      className={`group relative w-full overflow-hidden rounded-sm focus:outline-none focus:ring-1 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#050505] ${aspectClass}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.5,
+        delay: index * STAGGER,
+        ease: [0.22, 1, 0.36, 1],
+      }}
       whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="absolute inset-0">
+        {!loaded && (
+          <div className="absolute inset-0 rounded-sm bg-white/5 animate-pulse" aria-hidden />
+        )}
         <Image
           src={item.image}
           alt={item.title}
           fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          className="rounded-sm object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          onLoad={() => setLoaded(true)}
         />
       </div>
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-0 rounded-sm bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         aria-hidden
       />
-      <div
-        className="pointer-events-none absolute inset-0 shadow-[inset_0_0_60px_rgba(197,160,89,0.15)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        aria-hidden
-      />
-      <div className="absolute inset-0 flex items-end justify-center p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        <p className="font-serif text-base font-light tracking-wide text-gold md:text-lg">
-          {item.title}
-        </p>
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <span className="rounded-full border border-gold/60 bg-black/40 px-5 py-2 font-serif text-sm font-light tracking-wide text-gold">
+          Voir
+        </span>
       </div>
     </motion.button>
   );
 }
 
-function LightboxFullscreen({
-  item,
+function ModalDetail({
+  items,
+  currentIndex,
   onClose,
+  onPrev,
+  onNext,
 }: {
-  item: PortfolioItem | null;
+  items: PortfolioItem[];
+  currentIndex: number;
   onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
 }) {
+  const item = items[currentIndex];
+  if (!item) return null;
+
   useEffect(() => {
-    if (!item) return;
-    const fn = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    };
     window.addEventListener("keydown", fn);
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", fn);
       document.body.style.overflow = "";
     };
-  }, [item, onClose]);
+  }, [onClose, onPrev, onNext]);
 
   return (
-    <AnimatePresence>
-      {item && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0a0a] p-4 md:p-8"
-          onClick={onClose}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Galerie plein écran"
-        >
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+      className="fixed inset-0 z-[100] flex bg-[#050505]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Détail du projet"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-4 top-4 z-20 flex h-12 w-12 items-center justify-center rounded-sm text-white/70 transition hover:bg-white/10 hover:text-gold"
+        aria-label="Fermer"
+      >
+        <X className="h-6 w-6" />
+      </button>
+
+      <div className="flex flex-1 flex-col md:flex-row">
+        <div className="relative flex flex-1 items-center justify-center p-4 md:p-8">
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="relative h-full min-h-[50vh] w-full"
+          >
+            <Image
+              src={item.image}
+              alt={item.title}
+              fill
+              className="object-contain"
+              sizes="100vw"
+            />
+          </motion.div>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-white/10 p-4 md:flex-col md:justify-center md:border-t-0 md:border-l md:px-6">
           <button
             type="button"
-            onClick={onClose}
-            className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full text-white/70 transition hover:text-gold"
-            aria-label="Fermer"
+            onClick={onPrev}
+            disabled={currentIndex === 0}
+            className="flex h-12 w-12 items-center justify-center rounded-sm text-white/70 transition hover:bg-white/10 hover:text-gold disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Image précédente"
           >
-            <X className="h-6 w-6" />
+            <ChevronLeft className="h-8 w-8" />
           </button>
-          <motion.div
-            initial={{ scale: 0.96, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.96, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative h-full w-full max-w-6xl"
-            onClick={(e) => e.stopPropagation()}
+          <p className="font-serif text-sm font-light text-gold">
+            {currentIndex + 1} / {items.length}
+          </p>
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={currentIndex === items.length - 1}
+            className="flex h-12 w-12 items-center justify-center rounded-sm text-white/70 transition hover:bg-white/10 hover:text-gold disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Image suivante"
           >
-            <div className="relative h-full min-h-[60vh] w-full">
-              <Image
-                src={item.image}
-                alt={item.title}
-                fill
-                className="object-contain"
-                sizes="100vw"
-              />
-            </div>
-            <p className="mt-4 text-center font-serif text-sm font-light text-gold md:text-base">
-              {item.title}
-            </p>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <ChevronRight className="h-8 w-8" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function CustomCursor({ visible, x, y }: { visible: boolean; x: number; y: number }) {
+  if (!visible) return null;
+  return (
+    <div
+      className="pointer-events-none fixed z-[200] hidden md:block"
+      style={{
+        left: x,
+        top: y,
+        transform: "translate(-50%, -50%)",
+      }}
+    >
+      <span className="rounded-full border border-gold/70 bg-black/60 px-4 py-2 font-serif text-xs font-light tracking-widest text-gold backdrop-blur-sm">
+        Voir
+      </span>
+    </div>
   );
 }
 
 export default function PortfolioShowcase() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
+  const items = useMemo(() => getItems(), []);
+  const [modalIndex, setModalIndex] = useState<number | null>(null);
+  const [cursor, setCursor] = useState({ visible: false, x: 0, y: 0 });
 
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end end"],
-  });
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setCursor({ visible: true, x: e.clientX, y: e.clientY });
+  };
 
-  const yLeft = useTransform(scrollYProgress, [0, 0.5, 1], [80, 0, -80]);
-  const yMid = useTransform(scrollYProgress, [0, 0.5, 1], [-40, 0, 40]);
-  const yRight = useTransform(scrollYProgress, [0, 0.5, 1], [100, 0, -120]);
+  const handleMouseLeave = () => {
+    setCursor((c) => ({ ...c, visible: false }));
+  };
 
-  const columns = useMemo(() => distributeMasonry(toItems(), 3), []);
+  const openModal = (index: number) => setModalIndex(index);
+  const closeModal = () => setModalIndex(null);
+  const goPrev = () => setModalIndex((i) => (i === null ? null : i > 0 ? i - 1 : i));
+  const goNext = () =>
+    setModalIndex((i) => (i === null ? null : i < items.length - 1 ? i + 1 : i));
 
   return (
-    <div ref={ref} className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[#050505]">
       <section id="portfolio" className="scroll-mt-20 px-4 py-16 md:px-8 md:py-24 lg:px-12">
         <div className="mx-auto max-w-7xl">
           <motion.div
-            className="mb-16 md:mb-24"
+            className="mb-12 md:mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -208,16 +244,22 @@ export default function PortfolioShowcase() {
             </p>
           </motion.div>
 
-          <motion.div
-            className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-10 lg:gap-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+          <div
+            className="portfolio-gallery grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            onMouseMove={(e) => setCursor({ visible: true, x: e.clientX, y: e.clientY })}
+            onMouseLeave={() => setCursor((c) => ({ ...c, visible: false }))}
           >
-            <MasonryColumn items={columns[0]} y={yLeft} onSelect={setLightbox} />
-            <MasonryColumn items={columns[1]} y={yMid} onSelect={setLightbox} />
-            <MasonryColumn items={columns[2]} y={yRight} onSelect={setLightbox} />
-          </motion.div>
+            {items.map((item, index) => (
+              <PortfolioCard
+                key={item.id}
+                item={item}
+                index={index}
+                onSelect={() => openModal(index)}
+              />
+            ))}
+          </div>
+
+          <CustomCursor visible={cursor.visible} x={cursor.x} y={cursor.y} />
 
           <Link
             href="/projets"
@@ -251,7 +293,17 @@ export default function PortfolioShowcase() {
         </motion.div>
       </section>
 
-      <LightboxFullscreen item={lightbox} onClose={() => setLightbox(null)} />
+      <AnimatePresence>
+        {modalIndex !== null && (
+          <ModalDetail
+            items={items}
+            currentIndex={modalIndex}
+            onClose={closeModal}
+            onPrev={goPrev}
+            onNext={goNext}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
